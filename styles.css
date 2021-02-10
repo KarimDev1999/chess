@@ -1,0 +1,97 @@
+body {
+    box-sizing: border-box;
+  
+}
+.board {
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    width: 800px;
+    height: 800px;
+    border: 1px solid gray;
+}
+
+.square {
+    width: 98px;
+    height: 98px;
+    border: 1px solid black;
+}
+
+
+.black-rook {
+    background: url(images/black/rook.svg) center center no-repeat;
+    background-size: 80px;    
+}
+
+.black-pawn {
+    background: url(images/black/pawn-chess-piece.svg) center center no-repeat;
+    background-size: 80px;
+}
+
+.black-horse {
+    background: url(images/black/horse.svg) center center no-repeat;
+    background-size: 80px;
+}
+.black-bishop {
+    background: url(images/black/bishop.svg) center center no-repeat;
+    background-size: 80px;
+}
+.black-queen {
+    background: url(images/black/queen.svg) center center no-repeat;
+    background-size: 80px;
+}
+.black-king {
+    background: url(images/black/king.svg) center center no-repeat;
+    background-size: 80px;
+}
+.white-rook {
+    background: url(images/white/rook.svg) center center no-repeat;
+    background-size: 80px;    
+}
+
+.white-pawn {
+    background: url(images/white/pawn-chess-piece.svg) center center no-repeat;
+    background-size: 80px;
+}
+
+.white-horse {
+    background: url(images/white/horse.svg) center center no-repeat;
+    background-size: 80px;
+}
+.white-bishop {
+    background: url(images/white/bishop.svg) center center no-repeat;
+    background-size: 80px;
+}
+.white-queen {
+    background: url(images/white/queen.svg) center center no-repeat;
+    background-size: 80px;
+}
+.white-king {
+    background: url(images/white/king.svg) center center no-repeat;
+    background-size: 80px;
+}
+
+.current {
+    background-color: gray !important;
+}
+
+.next {
+    position: relative;
+}
+
+.next::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    background-color: gray;
+    opacity: 0.5;
+}
+
+.red {
+    background-color: red !important;
+}
