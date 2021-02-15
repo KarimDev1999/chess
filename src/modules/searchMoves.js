@@ -1,15 +1,13 @@
-import { checkDir } from "./helpers";
+import { checkDir, getPieceName } from "./helpers";
 
 const searchNextMovesForBishop = (currentPiece) => {
     let lines = new Array(4).fill(null);
     let toggle = false;
-
     let moves = lines.map((_, i) => {
         let asd = [];
         if (i % 2 === 0) {
             toggle = !toggle;
         }
-
         for (let j = 1; j <= 7; j++) {
             if (i % 2 === 0 && !toggle) {
                 asd.push(document.querySelector(`[posY="${+currentPiece.getAttribute('posY') - j}"][posX="${+currentPiece.getAttribute('posX') - j}"]`))
@@ -24,7 +22,6 @@ const searchNextMovesForBishop = (currentPiece) => {
                 asd.push(document.querySelector(`[posY="${+currentPiece.getAttribute('posY') - j}"][posX="${+currentPiece.getAttribute('posX') + j}"]`))
             }
         }
-
         return asd
     })
     moves.forEach(line => line.forEach((move, i) => move && move.getAttribute('piece') !== null ? line.splice(i + 1) : null))
@@ -35,7 +32,6 @@ const searchNextMovesForBishop = (currentPiece) => {
 const searchNextMovesForRook = (currentPiece) => {
     let lines = new Array(4).fill(null);
     let toggle = false;
-
     let moves = lines.map((_, i) => {
         let asd = [];
         if (i % 2 === 0) {
@@ -107,8 +103,8 @@ const searchNextMovesForPawn = (currentPiece) => {
 }
 
 
-const searchNextMoves = (type, currentPiece) => {
-    switch (type) {
+const searchNextMoves = (currentPiece) => {
+    switch (getPieceName(currentPiece)) {
         case 'rook': {
             return searchNextMovesForRook(currentPiece)
         }

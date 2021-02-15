@@ -44,12 +44,14 @@ for (let i = 0; i < squares.length; i++) {
 
 
 let factory = new PieceFactory();
-let blackPawn = factory.create('pawn', 'black');
-let blackRook = factory.create('rook', 'black');
-let blackHorse = factory.create('horse', 'black');
-let blackBishop = factory.create('bishop', 'black');
-let blackQueen = factory.create('queen', 'black');
-let blackKing = factory.create('king', 'black');
+const blackPieces = [
+    factory.create('pawn', 'black'),
+    factory.create('rook', 'black'),
+    factory.create('horse', 'black'),
+    factory.create('bishop', 'black'),
+    factory.create('queen', 'black'),
+    factory.create('king', 'black')
+]
 
 const drawPieces = (pieces) => {
     let color = pieces[0].color;
@@ -68,23 +70,25 @@ const drawPieces = (pieces) => {
     })
 }
 
-function addPiecesForBlack(...args) {
-    drawPieces(args)
+function addPiecesForBlack(blackPieces) {
+    drawPieces(blackPieces)
 }
-addPiecesForBlack(blackPawn, blackRook, blackHorse, blackBishop, blackQueen, blackKing);
+addPiecesForBlack(blackPieces);
+
+const whitePieces = [
+    factory.create('pawn', 'white'),
+    factory.create('rook', 'white'),
+    factory.create('horse', 'white'),
+    factory.create('bishop', 'white'),
+    factory.create('queen', 'white'),
+    factory.create('king', 'white'),
+]
 
 
-let whitePawn = factory.create('pawn', 'white');
-let whiteRook = factory.create('rook', 'white');
-let whiteHorse = factory.create('horse', 'white');
-let whiteBishop = factory.create('bishop', 'white');
-let whiteQueen = factory.create('queen', 'white');
-let whiteKing = factory.create('king', 'white');
-
-function addPiecesForWhite(...args) {
-    drawPieces(args)
+function addPiecesForWhite(whitePieces) {
+    drawPieces(whitePieces)
 }
-addPiecesForWhite(whitePawn, whiteRook, whiteHorse, whiteBishop, whiteQueen, whiteKing)
+addPiecesForWhite(whitePieces)
 
 const movePiece = (history) => {
     let prev = history[0];
@@ -160,7 +164,7 @@ const movesForAllPieces = (squares) => {
     squares.forEach(square => square.getAttribute('piece') !== null ? (
         allPieces.push({
             current: square,
-            nextMoves: searchNextMoves(getPieceName(square), square),
+            nextMoves: searchNextMoves(square),
             color: getPieceColor(square)
         })
     ) : null)
