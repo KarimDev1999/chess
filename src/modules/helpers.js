@@ -19,3 +19,23 @@ export const checkDir = (currentPiece) => {
 }
 
 
+export const getEnemyColor = (piece) => {
+    return piece.color === 'white' ? 'black' : 'white';
+}
+
+
+
+export const handlePinLine = (piece, searchMovesFunction, checkInfo) => {
+    let lines = searchMovesFunction(piece.current);
+    lines.forEach(moves => {
+        if (moves.length > 0) {
+            let kingOnTheLine = moves.find(move => move && move.classList.value.includes(`${getEnemyColor(piece)}-king`));
+            let pieceOnTheLine = moves.find(move => move && move !== piece.current && move.getAttribute('piece') && getPieceColor(move) !== piece.color && getPieceName(move) !== 'king');
+            if (kingOnTheLine && pieceOnTheLine) {
+                let isContainSameLine = checkInfo.pinLine.length && getPieceName(checkInfo.pinLine[0]) === getPieceName(piece.current)
+                !isContainSameLine && checkInfo.pinLine.push(piece.current, ...moves.slice(0, moves.indexOf(kingOnTheLine)))
+                checkInfo.pinedPiece = pieceOnTheLine
+            }
+        }
+    })
+}

@@ -1,6 +1,7 @@
 import { PieceFactory } from './modules/factory';
 import { searchNextMoves } from './modules/searchMoves'
-import { checkDir, getPieceColor, getPieceName } from './modules/helpers'
+import { checkDir, getPieceColor, getPieceName, getEnemyColor, handlePinLine } from './modules/helpers'
+import { searchNextMovesForBishop, searchNextMovesForRook } from './modules/searchMoves';
 let board = document.querySelector('.board');
 
 for (let i = 0; i < 8; i++) {
@@ -42,7 +43,7 @@ for (let i = 0; i < squares.length; i++) {
 
 
 
-
+// draw pieces login starts here
 let factory = new PieceFactory();
 const blackPieces = [
     factory.create('pawn', 'black'),
@@ -90,16 +91,32 @@ function addPiecesForWhite(whitePieces) {
 }
 addPiecesForWhite(whitePieces)
 
+// draw pieces logic ends here
+
+const checkInfo = {
+    checkLines: [],
+    saveMoves: [],
+    pinedPiece: null,
+    pinLine: [],
+    isCheckmate: false,
+    kingInCheck: null,
+
+}
+let currentTurnText = document.querySelector('.current-turn');
+let history = [];
+let CURRENT_TURN = 'white';
+currentTurnText.innerHTML = `CURRENT TURN: ${CURRENT_TURN}`;
+
 const movePiece = (history) => {
     let prev = history[0];
     let next = history[1];
-    let color = getPieceColor(history[0])
+    let color = getPieceColor(prev)
     next.classList.remove(next.getAttribute('piece'));
     next.removeAttribute('piece');
-    if (history[0].getAttribute('firstMove' !== null)) {
-        history[0].removeAttribute('firstMove')
+    if (prev.getAttribute('firstMove' !== null)) {
+        prev.removeAttribute('firstMove')
     }
-    if (getPieceName(history[0]) === 'pawn' && (+history[1].getAttribute('posY') === 1 || +history[1].getAttribute('posY') === 8)) {
+    if (getPieceName(prev) === 'pawn' && (+next.getAttribute('posY') === 1 || +next.getAttribute('posY') === 8)) {
         next.classList.add(`${color}-queen`)
         next.setAttribute('piece', `${color}-queen`)
     }
@@ -114,48 +131,108 @@ const movePiece = (history) => {
 
 const filterMoves = (piece) => {
     let checkedList = [];
-    let enemyColor = piece.color === 'white' ? 'black' : 'white';
+    let enemyColor = getEnemyColor(piece);
+
+    //diaglonal pins
+    if (getPieceName(piece.current) === 'bishop' || getPieceName(piece.current) === 'queen') {
+        handlePinLine(piece, searchNextMovesForBishop, checkInfo)
+    }
+    // vertical and horizontal pins
+    if (getPieceName(piece.current) === 'rook' || getPieceName(piece.current) === 'queen') {
+        handlePinLine(piece, searchNextMovesForRook, checkInfo)
+    }
+
     piece.nextMoves.flat().forEach(move => {
         if (move) {
-            if (getPieceName(piece.current) === 'king' && !move.getAttribute(`${enemyColor}-attack`)) {
-                if (move.getAttribute('piece') !== null && getPieceColor(move) !== piece.color || move.getAttribute('piece') === null) {
-                    return checkedList.push(move)
-                }
+            if (getPieceName(piece.current) === 'king' && !move.getAttribute(`${enemyColor}-attack`) && (move.getAttribute('piece') !== null && getPieceColor(move) !== piece.color || move.getAttribute('piece') === null)) {
+                return checkedList.push(move)
             }
             if (move.getAttribute('piece') !== null && getPieceName(move) === 'king' && getPieceColor(move) !== piece.color) {
-                return (
-                    move.setAttribute('is-checked', 1),
+                piece.nextMoves.forEach(moves => {
+                    if (moves.length > 0) {
+                        moves.forEach(move => {
+                            if (move && move.classList.value.includes(`${enemyColor}-king`)) {
+                                let isContainSameLine = checkInfo.checkLines.some(line => getPieceName(line[0]) === getPieceName(piece.current))
+                                !isContainSameLine && checkInfo.checkLines.push([piece.current, ...moves.slice(0, moves.indexOf(move) + 1)]);
+                                checkInfo.kingInCheck = enemyColor;
+                            }
+                        })
+                    }
+                })
+                move.setAttribute('is-checked', 1),
                     move.classList.add('red')
-                )
-            }
+                return
 
+            }
             if (move.getAttribute('piece') === null && getPieceName(piece.current) !== 'king') {
                 return checkedList.push(move);
             }
-            if (move.getAttribute('piece') !== null && getPieceColor(move) !== piece.color && getPieceName(move) !== 'king') {
+            if (move.getAttribute('piece') !== null && getPieceColor(move) !== piece.color && getPieceName(move) !== 'king' && getPieceName(piece.current) !== 'king') {
                 return checkedList.push(move);
             }
         }
     })
-    return checkedList
+
+
+    if (checkInfo.checkLines.length === 1 && checkInfo.kingInCheck) {
+        checkedList.forEach(move => {
+            checkInfo.checkLines.forEach(line => {
+                line.forEach(square => {
+                    if (piece.color === checkInfo.kingInCheck && square === move && getPieceName(piece.current) !== 'king') {
+                        checkInfo.saveMoves.push(move);
+                    }
+                    else if (piece.color === checkInfo.kingInCheck && getPieceName(piece.current) === 'king') {
+                        checkInfo.saveMoves.push(move)
+                    }
+                })
+            })
+        })
+        return checkInfo.saveMoves;
+    }
+    else if (checkInfo.checkLines.length === 2 && checkInfo.kingInCheck) {
+        checkedList.forEach(move => {
+            if (getPieceName(piece.current) === 'king' && piece.color === checkInfo.kingInCheck) {
+                checkInfo.saveMoves.push(move);
+            }
+        })
+        return checkInfo.saveMoves
+    }
+    if (checkInfo.pinedPiece === piece.current) {
+        checkedList = []
+        piece.nextMoves.flat().forEach(move => {
+            checkInfo.pinLine.forEach(pinedSquare => {
+                if (pinedSquare === move) {
+                    checkedList.push(move)
+                }
+            })
+        })
+        return checkedList
+    }
+
+    return checkedList;
 }
 
 
-
-
-let currentTurnText = document.querySelector('.current-turn');
-let history = [];
-let CURRENT_TURN = 'white';
-currentTurnText.innerHTML = `CURRENT TURN: ${CURRENT_TURN}`;
-
-
-
-const checkForDiagonalAttacks = (currentPiece, color) => {
-    let dir = checkDir(currentPiece)
+const checkForDiagonalAttacks = (piece, color) => {
+    let currentPiece = piece.current;
+    let dir = checkDir(currentPiece);
+    let enemyColor = getEnemyColor(piece);
     let diagonalAttacks = [document.querySelector(`[posY="${+currentPiece.getAttribute('posY') - dir}"][posX="${+currentPiece.getAttribute('posX') - 1}"]`),
     document.querySelector(`[posY="${+currentPiece.getAttribute('posY') - dir}"][posX="${+currentPiece.getAttribute('posX') + 1}"]`)]
-    diagonalAttacks.forEach(attack => attack && attack.setAttribute(`${color}-attack`, true))
-    return diagonalAttacks.filter(attack => attack && attack.getAttribute('piece') !== null && getPieceColor(attack) !== color)
+    diagonalAttacks.forEach(attack => {
+        if (attack) {
+            attack.setAttribute(`${color}-attack`, true)
+            if (attack.getAttribute('piece') && getPieceName(attack) === 'king' && getPieceColor(attack) !== color) {
+                attack.setAttribute('is-checked', 1);
+                attack.classList.add('red');
+                checkInfo.kingInCheck = enemyColor;
+                let test = checkInfo.checkLines.some(line => getPieceName(line[line.length - 1]) === getPieceName(piece.current))
+                !test && checkInfo.checkLines.push([piece.current]);
+            }
+        }
+    })
+    piece.nextMoves = diagonalAttacks.filter(attack => attack && attack.getAttribute('piece') !== null && getPieceColor(attack) !== color && getPieceName(attack) !== 'king');
+    return piece;
 }
 
 
@@ -168,25 +245,33 @@ const movesForAllPieces = (squares) => {
             color: getPieceColor(square)
         })
     ) : null)
-    return allPieces.map(piece => {
+    allPieces.forEach(piece => getPieceName(piece.current) !== 'pawn' && piece.nextMoves.flat().forEach(move => move && move.setAttribute(`${piece.color}-attack`, true)))
+    let restarted = false;
+    for (let i = 0; i < allPieces.length; i++) {
+        if (!restarted && checkInfo.kingInCheck) {
+            i = 0;
+            restarted = true
+        }
+        checkInfo.saveMoves = [];
+        let piece = allPieces[i];
         if (piece && getPieceName(piece.current) === 'pawn') {
-            return {
-                ...piece,
-                nextMoves: [...piece.nextMoves, ...checkForDiagonalAttacks(piece.current, piece.color)]
-            }
+            piece.nextMoves = [...filterMoves(piece), ...filterMoves(checkForDiagonalAttacks(piece, piece.color))]
         }
-        let filtredMoves = filterMoves(piece);
-        piece.nextMoves.flat().forEach(move => move && move.setAttribute(`${piece.color}-attack`, true))
-        return {
-            ...piece, nextMoves: filtredMoves
+        else {
+            let filtredMoves = filterMoves(piece);
+            piece.nextMoves = filtredMoves
         }
-    })
+    }
+    !allPieces.find(piece => piece.nextMoves.length) ? checkInfo.isCheckmate = true : null;
+    if (checkInfo.isCheckmate) return setTimeout(() => alert('checkmate sorry'))
+    return allPieces;
 }
+
 
 const triggerPiece = (e, squares) => {
     let possibleMoves = [];
     let currentPiece = e.target;
-
+    currentPiece !== null && currentPiece.getAttribute('piece') ? currentPiece.classList.add('current') : null;
     if (history.length < 2) {
         history.push(currentPiece);
     }
@@ -198,18 +283,18 @@ const triggerPiece = (e, squares) => {
         }
         history = [];
         currentPiece = null;
+        checkInfo.checkLines = [];
+        checkInfo.pinLine = [];
+        checkInfo.pinedPiece = null;
+        checkInfo.kingInCheck = null;
         squares.forEach(square => {
             square.removeAttribute('white-attack')
             square.removeAttribute('black-attack')
             square.removeAttribute('is-checked')
-            square.classList.remove('red')
-
+            square.classList.remove('red', 'next', 'current')
         })
     }
-    squares.forEach(square => {
-        square.classList.remove('next', 'current')
-    })
-    currentPiece !== null && currentPiece.getAttribute('piece') ? currentPiece.classList.add('current') : null;
+
     movesForAllPieces(squares).forEach(square => {
         if (square.current === currentPiece) {
             possibleMoves.push(...square.nextMoves);
@@ -220,8 +305,10 @@ const triggerPiece = (e, squares) => {
     })
 }
 
+
 squares.forEach(square => {
     square.addEventListener('click', (e) => {
         triggerPiece(e, squares)
     })
 });
+
