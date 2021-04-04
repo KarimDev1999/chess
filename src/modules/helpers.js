@@ -1,8 +1,6 @@
-
 export const getPieceName = (square) => {
     return square.getAttribute('piece').split('-')[1]
 }
-
 export const getPieceColor = (square) => {
     return square.getAttribute('piece').split('-')[0]
 }
@@ -18,12 +16,9 @@ export const checkDir = (currentPiece) => {
     return dir
 }
 
-
 export const getEnemyColor = (piece) => {
     return piece.color === 'white' ? 'black' : 'white';
 }
-
-
 
 export const handlePinLine = (piece, searchMovesFunction, checkInfo) => {
     let lines = searchMovesFunction(piece.current);
