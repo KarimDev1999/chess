@@ -35,7 +35,6 @@ export const handlePinLine = (piece, searchMovesFunction, checkInfo) => {
             let isAllyPieceOnTheLine = false;
             moves.forEach(move => {
                 if (move && move.classList.value.includes(`${getEnemyColor(piece)}-king`)) {
-                    console.log(move)
                     kingOnTheLine = move;
                 }
                 if (move && move !== piece.current && move.getAttribute('piece') && getPieceColor(move) !== piece.color && getPieceName(move) !== 'king') {
@@ -46,7 +45,6 @@ export const handlePinLine = (piece, searchMovesFunction, checkInfo) => {
                     isAllyPieceOnTheLine = true;
                 }
             })
-            console.log(kingOnTheLine, pieceOnTheLine)
             if (kingOnTheLine && pieceOnTheLine && numberOfPiecesOnTheLine <= 1 && !isAllyPieceOnTheLine) {
                 let isContainSameLine = checkInfo.pinLine.length && getPieceName(checkInfo.pinLine[0]) === getPieceName(piece.current)
                 !isContainSameLine && checkInfo.pinLine.push(piece.current, ...moves.slice(0, moves.indexOf(kingOnTheLine)))
