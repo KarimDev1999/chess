@@ -49,3 +49,7 @@ export const handlePinLine = (piece, searchMovesFunction, checkInfo) => {
         }
     })
 }
+
+export const handleStalemate = (allPieces, checkInfo, CURRENT_TURN, color) => {
+    !allPieces.find(piece => piece.nextMoves.length && piece.color === color) && !checkInfo.kingInCheck && CURRENT_TURN === color ? checkInfo.isStalemate = true : null;
+}

@@ -1,6 +1,6 @@
 import { PieceFactory } from './modules/factory';
 import { searchNextMoves } from './modules/searchMoves'
-import { checkDir, getPieceColor, getPieceName, getEnemyColor, handlePinLine } from './modules/helpers'
+import { checkDir, getPieceColor, getPieceName, getEnemyColor, handlePinLine, handleStalemate } from './modules/helpers'
 import { searchNextMovesForBishop, searchNextMovesForRook } from './modules/searchMoves';
 let board = document.querySelector('.board');
 
@@ -12,8 +12,6 @@ for (let i = 0; i < 8; i++) {
         board.appendChild(square);
     }
 }
-
-
 
 let y = 8;
 let x = 1;
@@ -96,9 +94,10 @@ addPiecesForWhite(whitePieces)
 const checkInfo = {
     checkLines: [],
     saveMoves: [],
-    pinedPiece: null,
     pinLine: [],
+    pinedPiece: null,
     isCheckmate: false,
+    isStalemate: false,
     kingInCheck: null,
 
 }
@@ -133,7 +132,7 @@ const filterMoves = (piece) => {
     let checkedList = [];
     let enemyColor = getEnemyColor(piece);
 
-    //diaglonal pins
+    //diagonal pins
     if (getPieceName(piece.current) === 'bishop' || getPieceName(piece.current) === 'queen') {
         handlePinLine(piece, searchNextMovesForBishop, checkInfo)
     }
@@ -263,6 +262,9 @@ const movesForAllPieces = (squares) => {
         }
     }
     !allPieces.find(piece => piece.nextMoves.length) ? checkInfo.isCheckmate = true : null;
+    handleStalemate(allPieces, checkInfo, CURRENT_TURN, 'black');
+    handleStalemate(allPieces, checkInfo, CURRENT_TURN, 'white');
+    if (checkInfo.isStalemate) return setTimeout(() => alert('stalemate sorry'))
     if (checkInfo.isCheckmate) return setTimeout(() => alert('checkmate sorry'))
     return allPieces;
 }
@@ -294,8 +296,8 @@ const triggerPiece = (e, squares) => {
             square.classList.remove('red', 'next', 'current')
         })
     }
-
-    movesForAllPieces(squares).forEach(square => {
+    let allMoves = movesForAllPieces(squares)
+    allMoves.length > 0 && allMoves.forEach(square => {
         if (square.current === currentPiece) {
             possibleMoves.push(...square.nextMoves);
         }
