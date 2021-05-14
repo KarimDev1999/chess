@@ -172,6 +172,22 @@ const filterMoves = (piece) => {
         }
     })
 
+    if (checkInfo.pinedPiece === piece.current) {
+        checkedList = []
+        piece.nextMoves.flat().forEach(move => {
+            if (!checkInfo.kingInCheck) {
+                checkInfo.pinLine.forEach(pinedSquare => {
+                    if (pinedSquare === move) {
+                        checkedList.push(move)
+                    }
+                })
+            }
+        })
+        return checkedList
+    }
+
+
+
 
     if (checkInfo.checkLines.length === 1 && checkInfo.kingInCheck) {
         checkedList.forEach(move => {
@@ -196,17 +212,9 @@ const filterMoves = (piece) => {
         })
         return checkInfo.saveMoves
     }
-    if (checkInfo.pinedPiece === piece.current) {
-        checkedList = []
-        piece.nextMoves.flat().forEach(move => {
-            checkInfo.pinLine.forEach(pinedSquare => {
-                if (pinedSquare === move) {
-                    checkedList.push(move)
-                }
-            })
-        })
-        return checkedList
-    }
+
+
+
 
     return checkedList;
 }
@@ -312,5 +320,6 @@ squares.forEach(square => {
     square.addEventListener('click', (e) => {
         triggerPiece(e, squares)
     })
+
 });
 

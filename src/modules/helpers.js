@@ -28,11 +28,13 @@ export const handlePinLine = (piece, searchMovesFunction, checkInfo) => {
             let kingOnTheLine = null;
             let pieceOnTheLine = null;
             let isAllyPieceOnTheLine = false;
+            let cutHandle = false;
             moves.forEach(move => {
                 if (move && move.classList.value.includes(`${getEnemyColor(piece)}-king`)) {
                     kingOnTheLine = move;
+                    cutHandle = true
                 }
-                if (move && move !== piece.current && move.getAttribute('piece') && getPieceColor(move) !== piece.color && getPieceName(move) !== 'king') {
+                if (move && move !== piece.current && move.getAttribute('piece') && getPieceColor(move) !== piece.color && getPieceName(move) !== 'king' && !cutHandle) {
                     pieceOnTheLine = move;
                     numberOfPiecesOnTheLine++;
                 }
